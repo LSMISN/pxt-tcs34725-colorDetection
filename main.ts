@@ -1,6 +1,18 @@
-/**
- *This is TCS34725: color sensor user control function.
- */
+/*!
+* This is TCS34725 color sensor user control function
+* typeScript adaptation of DFRobot Arduino's code for MakeCode.microbit.org
+* @author [oe](proflsmisn@gmail.com) 
+* @version  V1.0
+* @date 2020-03-12
+* 
+* ORIGINAL CODE COME FROM
+* @copyright	[DFRobot](http://www.dfrobot.com), 2016
+* @copyright	GNU Lesser General Public License
+*
+* @author [carl](carl.xu@dfrobot.com)
+* @version  V1.0
+* @date  2016-07-12
+*/
 //% weight=10 color=#DF6721 icon="\uf013" block="DF-Driver"
 namespace TCS34725 {
 
@@ -80,20 +92,34 @@ namespace TCS34725 {
         //% block="GAIN_60X " 
         TCS34725_GAIN_60X = 0x03    ///<  60x gain 
     }
-    // write UInt8 to reg
+
+    /*!
+	*  @brief Writes a register and an 8 bit value over I2C
+	*  @param reg register address .
+	*  @param value  data.
+	*/
     function writeReg(reg: number, dat: number): void {
         let tb = pins.createBuffer(2)
         tb[0] = reg
         tb[1] = dat
         pins.i2cWriteBuffer(TCS34725_ADDRESS, tb)
     }
-    // read a UInt8LE from reg
+
+    /*!
+	*  @brief Reads an 8 bit value over I2C
+	*  @param reg register address .
+	*  @return I2C  data.
+	*/
     function readReg(reg: number): number {
         pins.i2cWriteNumber(TCS34725_ADDRESS, reg, NumberFormat.UInt8BE);
         return pins.i2cReadNumber(TCS34725_ADDRESS, NumberFormat.UInt8LE);
     }
 
-    // read a UInt16LE from reg
+    /*!
+	*  @brief Reads an 8 bit value over I2C
+	*  @param reg register address .
+	*  @return I2C  data.
+	*/
     function readRegWord(reg: number): number {
         pins.i2cWriteNumber(TCS34725_ADDRESS, reg, NumberFormat.UInt8BE);
         return pins.i2cReadNumber(TCS34725_ADDRESS, NumberFormat.UInt16LE);
@@ -103,12 +129,17 @@ namespace TCS34725 {
     let _tcs34725IntegrationTime = tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_2_4MS;
     let _tcs34725Gain = tcs34725Gain_t.TCS34725_GAIN_1X;
 
+    /*!
+	*  @brief Enables the device
+	*/
     function enable(): void {
         writeReg(TCS34725_ENABLE, TCS34725_ENABLE_PON);
         basic.pause(3);
         writeReg(TCS34725_ENABLE, TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN);
     }
-
+    /*!
+	*  Disables the device (putting it in lower power sleep mode)
+	*/
     function disable(): void {
 
         /* Turn the device off to save power */
@@ -116,7 +147,10 @@ namespace TCS34725 {
         reg = readReg(TCS34725_ENABLE);
         writeReg(TCS34725_ENABLE, reg & ~(TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN));
     }
-
+    /*!
+		*  @brief Initializes I2C and configures the sensor (call this function beforedoing anything else).
+		*  @return  0  success.
+		*/
     function begin(): boolean {
         /* Make sure we're actually connected */
         let x = readReg(TCS34725_ID);
@@ -135,9 +169,10 @@ namespace TCS34725 {
         return true;
     }
 
-    /**
-     * set integration time
-     */
+    /*!
+		*  @brief Adjusts the gain on the TCS34725 (adjusts the sensitivity to light)
+		*  @param gain  gain time.
+		*/
     //% block="integration time %it"
     //% it.defl=tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_101MS
     export function setIntegrationTime(it: number): void {
@@ -150,9 +185,10 @@ namespace TCS34725 {
         _tcs34725IntegrationTime = it;
     }
 
-    /**
-     * set gain
-     */
+    /*!
+		*  @brief Adjusts the gain on the TCS34725 (adjusts the sensitivity to light)
+		*  @param gain  gain time.
+		*/
     //% block="gain %g"
     //% g.defl=tcs34725Gain_t.TCS34725_GAIN_1X
     export function setGain(g: number) {
@@ -165,24 +201,27 @@ namespace TCS34725 {
         _tcs34725Gain = g;
     }
 
-    /**
-     * get R,G,B,c values
-     */
+	/*!
+		*  @brief Reads the raw red, green, blue and clear channel values
+		*  @param r  red.
+		*  @param g  green.
+		*  @param b  blue.
+		*/
     //% block
     export function getRGBC() {
 
-        if (! _tcs34725Initialised) begin();
+        if (!_tcs34725Initialised) begin();
 
-  let c = readRegWord(TCS34725_CDATAL);
-  let r = readRegWord(TCS34725_RDATAL);
-  let g = readRegWord(TCS34725_GDATAL);
-  let b = readRegWord(TCS34725_BDATAL);
+        let c = readRegWord(TCS34725_CDATAL);
+        let r = readRegWord(TCS34725_RDATAL);
+        let g = readRegWord(TCS34725_GDATAL);
+        let b = readRegWord(TCS34725_BDATAL);
 
-  let values = pins.createBuffer(4);
-  values[0] = r;
-  values[1] = g;
-  values[2] = b;
-  values[3] = c;
+        let values = pins.createBuffer(4);
+        values[0] = r;
+        values[1] = g;
+        values[2] = b;
+        values[3] = c;
 
         /* Set a delay for the integration time */
         switch (_tcs34725IntegrationTime) {
@@ -208,6 +247,14 @@ namespace TCS34725 {
         return values;
     }
 
+    /*!
+		*  @brief Converts the raw R/G/B values to color temperature in degrees
+		*  @param r  red.
+		*  @param g  green.
+		*  @param b  blue.
+		*  @return  c.
+		*/
+    //% block
     export function calculateColorTemperature(r: NumberFormat.UInt16LE, g: NumberFormat.UInt16LE, b: NumberFormat.UInt16LE): NumberFormat.UInt16LE {
         /* RGB to XYZ correlation      */
         let X: NumberFormat.Float32LE;
@@ -234,11 +281,66 @@ namespace TCS34725 {
 
         /* 3. Use McCamy's formula to determine the CCT    */
         n = (xc - 0.3320) / (0.1858 - yc);
-    
+
         /* Calculate the final CCT */
         cct = (449.0 * Math.pow(n, 3)) + (3525.0 * Math.pow(n, 2)) + (6823.3 * n) + 5520.33;
 
         /* Return the results in degrees Kelvin */
         return NumberFormat.UInt16LE(cct);
+    }
+
+    /*!
+    *  @brief Converts the raw R/G/B values to lux
+    *  @param r  red.
+    *  @param g  green.
+    *  @param b  blue.
+    *  @return  lux.
+    */
+    //% block
+    export function calculateLux(r: NumberFormat.UInt16LE, g: NumberFormat.UInt16LE, b: NumberFormat.UInt16LE): NumberFormat.UInt16LE {
+        let illuminance: NumberFormat.Float32LE;
+
+        /* This only uses RGB ... how can we integrate clear or calculate lux */
+        /* based exclusively on clear since this might be more reliable?      */
+        illuminance = (-0.32466 * r) + (1.57837 * g) + (-0.73191 * b);
+
+        return NumberFormat.UInt16LE(illuminance);
+    }
+    /*!
+	*  @brief Interrupts enabled and turn off the LED
+	*/
+    //% block
+    export function lock() {
+        let r = readReg(TCS34725_ENABLE);
+        r |= TCS34725_ENABLE_AIEN;
+        writeReg(TCS34725_ENABLE, r);
+    }
+    /*!
+	*  @brief Interrupts disabled and turn On the LED
+	*/
+    //% block
+    export function unlock() {
+        let r = readReg(TCS34725_ENABLE);
+        r &= ~TCS34725_ENABLE_AIEN;
+        writeReg(TCS34725_ENABLE, r);
+    }
+
+    /*!
+	*  @brief clear Interrupts
+	*/
+    export function clear() {
+        pins.i2cWriteNumber(TCS34725_ADDRESS, TCS34725_COMMAND_BIT | 0x66, NumberFormat.Int8LE)
+
+    }
+    /*!
+	*  @brief set Int Limits
+	*  @param l low .
+	*  @param h high .
+	*/
+    export function setIntLimits(low: NumberFormat.UInt16LE, high: NumberFormat.UInt16LE): void {
+        writeReg(0x04, low & 0xFF);
+        writeReg(0x05, low >> 8);
+        writeReg(0x06, high & 0xFF);
+        writeReg(0x07, high >> 8);
     }
 }
