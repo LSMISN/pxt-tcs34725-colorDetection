@@ -54,7 +54,21 @@ namespace tcs34725 {
     const TCS34725_GDATAH = 0x19
     const TCS34725_BDATAL = 0x1A    ///< Blue channel data 
     const TCS34725_BDATAH = 0x1B
-}
+
+    export enum tcs34725IntegrationTime_t {
+        //% block="2.4ms"
+        TCS34725_INTEGRATIONTIME_2_4MS = 0xFF,   ///<  2.4ms - 1 cycle    - Max Count: 1024  
+        //% block="24ms"
+        TCS34725_INTEGRATIONTIME_24MS = 0xF6,   ///<  24ms  - 10 cycles  - Max Count: 10240 
+        //% block="50ms"
+        TCS34725_INTEGRATIONTIME_50MS = 0xEB,   ///<  50ms  - 20 cycles  - Max Count: 20480 
+        //% block="101ms"
+        TCS34725_INTEGRATIONTIME_101MS = 0xD5,   ///<  101ms - 42 cycles  - Max Count: 43008 
+        //% block="154ms"
+        TCS34725_INTEGRATIONTIME_154MS = 0xC0,   ///<  154ms - 64 cycles  - Max Count: 65535 
+        //% block="700ms"
+        TCS34725_INTEGRATIONTIME_700MS = 0x00    ///<  700ms - 256 cycles - Max Count: 65535 
+    }
 
 function i2cWrite(addr: number, reg: number, value: number) {
     let buf = pins.createBuffer(2)
@@ -73,4 +87,6 @@ function i2cRead(addr: number, reg: number) {
     pins.i2cWriteNumber(addr, reg, NumberFormat.UInt8BE);
     let val = pins.i2cReadNumber(addr, NumberFormat.UInt8BE);
     return val;
+}
+
 }
