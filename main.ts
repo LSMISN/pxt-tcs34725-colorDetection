@@ -81,7 +81,7 @@ namespace TCS34725 {
         TCS34725_GAIN_60X = 0x03    ///<  60x gain 
     }
     // write UInt8 to reg
-    function writereg(reg: number, dat: number): void {
+    function writeReg(reg: number, dat: number): void {
         let tb = pins.createBuffer(2)
         tb[0] = reg
         tb[1] = dat
@@ -103,4 +103,67 @@ namespace TCS34725 {
     let _tcs34725IntegrationTime = tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_2_4MS;
     let _tcs34725Gain = tcs34725Gain_t.TCS34725_GAIN_1X;
 
-}
+    function enable(): void {
+        writeReg(TCS34725_ENABLE, TCS34725_ENABLE_PON);
+        basic.pause(3);
+        writeReg(TCS34725_ENABLE, TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN);
+    }
+
+    function disable() : void {
+    
+        /* Turn the device off to save power */
+        let reg = 0;
+        reg = readReg(TCS34725_ENABLE);
+        writeReg(TCS34725_ENABLE, reg & ~(TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN));
+    }
+
+    function begin(): boolean {
+        /* Make sure we're actually connected */
+        let x = readReg(TCS34725_ID);
+        if ((x != 0x44) && (x != 0x10)) {
+            return false;
+        }
+        _tcs34725Initialised = true;
+
+        /* Set default integration time and gain */
+        setIntegrationTime(_tcs34725IntegrationTime);
+        setGain(_tcs34725Gain);
+
+        /* Note: by default, the device is in power down mode on bootup */
+        enable();
+
+        return true;
+    }
+
+    /**
+     * set integration time
+     */
+    //% block="integration time %it"
+    //% it.defl=tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_101MS
+    export function setIntegrationTime(it: number ):void
+    {
+        if (!_tcs34725Initialised) begin();
+
+        /* Update the timing register */
+        writeReg(TCS34725_ATIME, it);
+
+        /* Update value placeholders */
+        _tcs34725IntegrationTime = it;
+    }
+
+    /**
+     * set gain
+     */
+    //% block="gain %g"
+    //% g.defl=tcs34725Gain_t.TCS34725_GAIN_1X
+    export function setGain(g: number) {
+        if (!_tcs34725Initialised) begin();
+
+        /* Update the timing register */
+        writeReg(TCS34725_CONTROL, g);
+
+        /* Update value placeholders */
+        _tcs34725Gain = g;
+    }
+        
+    }
