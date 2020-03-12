@@ -328,6 +328,7 @@ namespace TCS34725 {
     /*!
 	*  @brief clear Interrupts
 	*/
+    //% block
     export function clear() {
         pins.i2cWriteNumber(TCS34725_ADDRESS, TCS34725_COMMAND_BIT | 0x66, NumberFormat.Int8LE)
 
@@ -337,6 +338,7 @@ namespace TCS34725 {
 	*  @param l low .
 	*  @param h high .
 	*/
+    //% block
     export function setIntLimits(low: NumberFormat.UInt16LE, high: NumberFormat.UInt16LE): void {
         writeReg(0x04, low & 0xFF);
         writeReg(0x05, low >> 8);
