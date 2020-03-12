@@ -69,7 +69,7 @@ namespace TCS34725 {
         //% block="700ms"
         TCS34725_INTEGRATIONTIME_700MS = 0x00    ///<  700ms - 256 cycles - Max Count: 65535 
     }
-    
+
     export enum tcs34725Gain_t {
         //% block="GAIN_1X "
         TCS34725_GAIN_1X = 0x00,   ///<  No gain  
@@ -109,8 +109,8 @@ namespace TCS34725 {
         writeReg(TCS34725_ENABLE, TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN);
     }
 
-    function disable() : void {
-    
+    function disable(): void {
+
         /* Turn the device off to save power */
         let reg = 0;
         reg = readReg(TCS34725_ENABLE);
@@ -140,8 +140,7 @@ namespace TCS34725 {
      */
     //% block="integration time %it"
     //% it.defl=tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_101MS
-    export function setIntegrationTime(it: number ):void
-    {
+    export function setIntegrationTime(it: number): void {
         if (!_tcs34725Initialised) begin();
 
         /* Update the timing register */
@@ -165,5 +164,81 @@ namespace TCS34725 {
         /* Update value placeholders */
         _tcs34725Gain = g;
     }
-        
+
+    /**
+     * get R,G,B,c values
+     */
+    //% block
+    export function getRGBC() {
+
+        if (! _tcs34725Initialised) begin();
+
+  let c = readRegWord(TCS34725_CDATAL);
+  let r = readRegWord(TCS34725_RDATAL);
+  let g = readRegWord(TCS34725_GDATAL);
+  let b = readRegWord(TCS34725_BDATAL);
+
+  let values = pins.createBuffer(4);
+  values[0] = r;
+  values[1] = g;
+  values[2] = b;
+  values[3] = c;
+
+        /* Set a delay for the integration time */
+        switch (_tcs34725IntegrationTime) {
+            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_2_4MS:
+                basic.pause(3);
+                break;
+            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_24MS:
+                basic.pause(24);
+                break;
+            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_50MS:
+                basic.pause(50);
+                break;
+            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_101MS:
+                basic.pause(101);
+                break;
+            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_154MS:
+                basic.pause(154);
+                break;
+            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_700MS:
+                basic.pause(700);
+                break;
+        }
+        return values;
     }
+
+    export function calculateColorTemperature(r: NumberFormat.UInt16LE, g: NumberFormat.UInt16LE, b: NumberFormat.UInt16LE): NumberFormat.UInt16LE {
+        /* RGB to XYZ correlation      */
+        let X: NumberFormat.Float32LE;
+        let Y: NumberFormat.Float32LE;
+        let Z: NumberFormat.Float32LE;
+        /* Chromaticity co-ordinates   */
+        let xc: NumberFormat.Float32LE;
+        let yc: NumberFormat.Float32LE;
+        /* McCamy's formula            */
+        let n: NumberFormat.Float32LE;
+        let cct: NumberFormat.Float32LE;
+
+        /* 1. Map RGB values to their XYZ counterparts.    */
+        /* Based on 6500K fluorescent, 3000K fluorescent   */
+        /* and 60W incandescent values for a wide range.   */
+        /* Note: Y = Illuminance or lux                    */
+        X = (-0.14282 * r) + (1.54924 * g) + (-0.95641 * b);
+        Y = (-0.32466 * r) + (1.57837 * g) + (-0.73191 * b);
+        Z = (-0.68202 * r) + (0.77073 * g) + (0.56332 * b);
+
+        /* 2. Calculate the chromaticity co-ordinates      */
+        xc = (X) / (X + Y + Z);
+        yc = (Y) / (X + Y + Z);
+
+        /* 3. Use McCamy's formula to determine the CCT    */
+        n = (xc - 0.3320) / (0.1858 - yc);
+    
+        /* Calculate the final CCT */
+        cct = (449.0 * Math.pow(n, 3)) + (3525.0 * Math.pow(n, 2)) + (6823.3 * n) + 5520.33;
+
+        /* Return the results in degrees Kelvin */
+        return NumberFormat.UInt16LE(cct);
+    }
+}
