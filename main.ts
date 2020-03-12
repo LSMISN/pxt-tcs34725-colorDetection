@@ -2,7 +2,7 @@
  *This is TCS34725: color sensor user control function.
  */
 //% weight=10 color=#DF6721 icon="\uf013" block="DF-Driver"
-namespace tcs34725 {
+namespace TCS34725 {
 
     const TCS34725_ADDRESS = 0x29
 
@@ -69,24 +69,38 @@ namespace tcs34725 {
         //% block="700ms"
         TCS34725_INTEGRATIONTIME_700MS = 0x00    ///<  700ms - 256 cycles - Max Count: 65535 
     }
+    
+    export enum tcs34725Gain_t {
+        //% block="GAIN_1X "
+        TCS34725_GAIN_1X = 0x00,   ///<  No gain  
+        //% block="GAIN_4X "
+        TCS34725_GAIN_4X = 0x01,   ///<  4x gain  
+        //% block="GAIN_16X "
+        TCS34725_GAIN_16X = 0x02,   ///<  16x gain
+        //% block="GAIN_60X " 
+        TCS34725_GAIN_60X = 0x03    ///<  60x gain 
+    }
+    // write UInt8 to reg
+    function writereg(reg: number, dat: number): void {
+        let tb = pins.createBuffer(2)
+        tb[0] = reg
+        tb[1] = dat
+        pins.i2cWriteBuffer(TCS34725_ADDRESS, tb)
+    }
+    // read a UInt8LE from reg
+    function readReg(reg: number): number {
+        pins.i2cWriteNumber(TCS34725_ADDRESS, reg, NumberFormat.UInt8BE);
+        return pins.i2cReadNumber(TCS34725_ADDRESS, NumberFormat.UInt8LE);
+    }
 
-function i2cWrite(addr: number, reg: number, value: number) {
-    let buf = pins.createBuffer(2)
-    buf[0] = reg
-    buf[1] = value
-    pins.i2cWriteBuffer(addr, buf)
-}
+    // read a UInt16LE from reg
+    function readRegWord(reg: number): number {
+        pins.i2cWriteNumber(TCS34725_ADDRESS, reg, NumberFormat.UInt8BE);
+        return pins.i2cReadNumber(TCS34725_ADDRESS, NumberFormat.UInt16LE);
+    }
 
-function i2cCmd(addr: number, value: number) {
-    let buf = pins.createBuffer(1)
-    buf[0] = value
-    pins.i2cWriteBuffer(addr, buf)
-}
-
-function i2cRead(addr: number, reg: number) {
-    pins.i2cWriteNumber(addr, reg, NumberFormat.UInt8BE);
-    let val = pins.i2cReadNumber(addr, NumberFormat.UInt8BE);
-    return val;
-}
+    let _tcs34725Initialised = false;
+    let _tcs34725IntegrationTime = tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_2_4MS;
+    let _tcs34725Gain = tcs34725Gain_t.TCS34725_GAIN_1X;
 
 }
