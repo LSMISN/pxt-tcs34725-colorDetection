@@ -13,7 +13,7 @@
 * @version  V1.0
 * @date  2016-07-12
 */
-//% weight=10 color=#DF6721 icon="\uf013" block="DF-Driver"
+//% weight=10 color=#DF6721 icon="\uf1fb" block="TCS34725_COLOR_DETECTOR"
 namespace TCS34725 {
 
     const TCS34725_ADDRESS = 0x29
