@@ -166,7 +166,8 @@ namespace TCS34725 {
 	*  @brief Initializes I2C and configures the sensor (call this function beforedoing anything else).
 	*  @return  0  success.
 	*/
-    function begin(): boolean {
+    //% block="Initialisation done"
+    export function begin(): boolean {
         /* Make sure we're actually connected */
         let x = readReg(TCS34725_ID);
         if ((x != 0x44) && (x != 0x10)) {
