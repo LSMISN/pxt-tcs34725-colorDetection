@@ -69,28 +69,43 @@ namespace TCS34725 {
 
     export enum tcs34725IntegrationTime_t {
         //% block="2.4ms"
-        TCS34725_INTEGRATIONTIME_2_4MS = 0xFF,   ///<  2.4ms - 1 cycle    - Max Count: 1024  
+        IT_2_4MS = 0xFF,   ///<  2.4ms - 1 cycle    - Max Count: 1024  
         //% block="24ms"
-        TCS34725_INTEGRATIONTIME_24MS = 0xF6,   ///<  24ms  - 10 cycles  - Max Count: 10240 
+        IT_24MS = 0xF6,   ///<  24ms  - 10 cycles  - Max Count: 10240 
         //% block="50ms"
-        TCS34725_INTEGRATIONTIME_50MS = 0xEB,   ///<  50ms  - 20 cycles  - Max Count: 20480 
+        IT_50MS = 0xEB,   ///<  50ms  - 20 cycles  - Max Count: 20480 
         //% block="101ms"
-        TCS34725_INTEGRATIONTIME_101MS = 0xD5,   ///<  101ms - 42 cycles  - Max Count: 43008 
+        IT_101MS = 0xD5,   ///<  101ms - 42 cycles  - Max Count: 43008 
         //% block="154ms"
-        TCS34725_INTEGRATIONTIME_154MS = 0xC0,   ///<  154ms - 64 cycles  - Max Count: 65535 
+        IT_154MS = 0xC0,   ///<  154ms - 64 cycles  - Max Count: 65535 
         //% block="700ms"
-        TCS34725_INTEGRATIONTIME_700MS = 0x00    ///<  700ms - 256 cycles - Max Count: 65535 
+        IT_700MS = 0x00    ///<  700ms - 256 cycles - Max Count: 65535 
     }
 
     export enum tcs34725Gain_t {
         //% block="GAIN_1X "
-        TCS34725_GAIN_1X = 0x00,   ///<  No gain  
+        GAIN_1X = 0x00,   ///<  No gain  
         //% block="GAIN_4X "
-        TCS34725_GAIN_4X = 0x01,   ///<  4x gain  
+        GAIN_4X = 0x01,   ///<  4x gain  
         //% block="GAIN_16X "
-        TCS34725_GAIN_16X = 0x02,   ///<  16x gain
+        GAIN_16X = 0x02,   ///<  16x gain
         //% block="GAIN_60X " 
-        TCS34725_GAIN_60X = 0x03    ///<  60x gain 
+        GAIN_60X = 0x03    ///<  60x gain 
+    }
+
+    export enum Values {
+        //% block="Red"
+        //% block.loc.fr="Rouge"
+        r = 0,
+        //% block="Green"
+        //% block.loc.fr="Vert"
+        g = 1,
+        //% block="Blue"
+        //% block.loc.fr="Bleu"
+        b = 2,
+        //% block="Clear Light"
+        //% block.loc.fr="Luminance"
+        c = 3
     }
 
     /*!
@@ -126,8 +141,8 @@ namespace TCS34725 {
     }
 
     let _tcs34725Initialised = false;
-    let _tcs34725IntegrationTime = tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_2_4MS;
-    let _tcs34725Gain = tcs34725Gain_t.TCS34725_GAIN_1X;
+    let _tcs34725IntegrationTime = tcs34725IntegrationTime_t.IT_2_4MS;
+    let _tcs34725Gain = tcs34725Gain_t.GAIN_1X;
 
     /*!
 	*  @brief Enables the device
@@ -169,13 +184,14 @@ namespace TCS34725 {
         return true;
     }
 
-    /*!
-		*  @brief Adjusts the gain on the TCS34725 (adjusts the sensitivity to light)
-		*  @param gain  gain time.
-		*/
+    /**
+	*  @brief Sets the integration time for the TC34725.
+	*  @param it  integration time.
+	**/
     //% block="integration time %it"
-    //% it.defl=tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_101MS
-    export function setIntegrationTime(it: number): void {
+    //% block.loc.fr="temps d'intégration %it"
+    //% it.loc.fr="temps d'intégration"
+    export function setIntegrationTime(it: number = tcs34725IntegrationTime_t.IT_101MS): void {
         if (!_tcs34725Initialised) begin();
 
         /* Update the timing register */
@@ -185,13 +201,14 @@ namespace TCS34725 {
         _tcs34725IntegrationTime = it;
     }
 
-    /*!
-		*  @brief Adjusts the gain on the TCS34725 (adjusts the sensitivity to light)
-		*  @param gain  gain time.
-		*/
+    /**
+	*  Adjusts the gain on the TCS34725 (adjusts the sensitivity to light)
+	*  @param gain  gain
+	**/
     //% block="gain %g"
-    //% g.defl=tcs34725Gain_t.TCS34725_GAIN_1X
-    export function setGain(g: number) {
+    //% jsdoc.loc.fr="Permet d'ajuster la sensibilité à la lumière ambiante"
+    //% g.loc.fr="gain"
+    export function setGain(g: number = tcs34725Gain_t.GAIN_1X) {
         if (!_tcs34725Initialised) begin();
 
         /* Update the timing register */
@@ -201,14 +218,20 @@ namespace TCS34725 {
         _tcs34725Gain = g;
     }
 
-	/*!
-		*  @brief Reads the raw red, green, blue and clear channel values
-		*  @param r  red.
-		*  @param g  green.
-		*  @param b  blue.
-		*/
-    //% block
-    export function getRGBC() {
+	/**
+	*  Reads the raw red, green, blue and clear channel values
+	*  @param r  red.
+	*  @param g  green.
+	*  @param b  blue.
+	**/
+    //% block="getColor %val"
+    //% block.loc.fr="affiche la valeur de couleur %val"
+    //% jsdoc.loc.fr="affiche la valeur du rouge, vert, bleu, ou la luminance "
+    //% r.loc.fr="Rouge"
+    //% g.loc.fr="Vert"
+    //% b.loc.fr="Bleu"
+    //% c.loc.fr="Luminance"
+    export function getRGBC(val: TCS34725.Values = TCS34725.Values.c) {
 
         if (!_tcs34725Initialised) begin();
 
@@ -217,45 +240,46 @@ namespace TCS34725 {
         let g = readRegWord(TCS34725_GDATAL);
         let b = readRegWord(TCS34725_BDATAL);
 
-        let values = pins.createBuffer(4);
-        values[0] = r;
-        values[1] = g;
-        values[2] = b;
-        values[3] = c;
-
         /* Set a delay for the integration time */
         switch (_tcs34725IntegrationTime) {
-            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_2_4MS:
+            case tcs34725IntegrationTime_t.IT_2_4MS:
                 basic.pause(3);
                 break;
-            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_24MS:
+            case tcs34725IntegrationTime_t.IT_24MS:
                 basic.pause(24);
                 break;
-            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_50MS:
+            case tcs34725IntegrationTime_t.IT_50MS:
                 basic.pause(50);
                 break;
-            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_101MS:
+            case tcs34725IntegrationTime_t.IT_101MS:
                 basic.pause(101);
                 break;
-            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_154MS:
+            case tcs34725IntegrationTime_t.IT_154MS:
                 basic.pause(154);
                 break;
-            case tcs34725IntegrationTime_t.TCS34725_INTEGRATIONTIME_700MS:
+            case tcs34725IntegrationTime_t.IT_700MS:
                 basic.pause(700);
                 break;
         }
-        return values;
+        switch (val) {
+            case Values.r:
+                return r
+            case Values.g:
+                return g;
+            case Values.b:
+                return b;
+            default:
+                return c;
+        }
     }
 
-    /*!
-		*  @brief Converts the raw R/G/B values to color temperature in degrees
-		*  @param r  red.
-		*  @param g  green.
-		*  @param b  blue.
-		*  @return  c.
-		*/
+    /**
+	*  Converts the raw R/G/B values to color temperature in degrees
+	*  @return  color temperature
+	**/
     //% block
-    export function calculateColorTemperature(r: NumberFormat.UInt16LE, g: NumberFormat.UInt16LE, b: NumberFormat.UInt16LE): NumberFormat.UInt16LE {
+    //% block.loc.fr="Calcul la temperature de couleur"
+    export function calculateColorTemperature(): NumberFormat.UInt16LE {
         /* RGB to XYZ correlation      */
         let X: NumberFormat.Float32LE;
         let Y: NumberFormat.Float32LE;
@@ -266,6 +290,14 @@ namespace TCS34725 {
         /* McCamy's formula            */
         let n: NumberFormat.Float32LE;
         let cct: NumberFormat.Float32LE;
+
+        /* Get raw data with no delay */
+        if (!_tcs34725Initialised) begin();
+
+        let c = readRegWord(TCS34725_CDATAL);
+        let r = readRegWord(TCS34725_RDATAL);
+        let g = readRegWord(TCS34725_GDATAL);
+        let b = readRegWord(TCS34725_BDATAL);
 
         /* 1. Map RGB values to their XYZ counterparts.    */
         /* Based on 6500K fluorescent, 3000K fluorescent   */
@@ -289,16 +321,23 @@ namespace TCS34725 {
         return NumberFormat.UInt16LE(cct);
     }
 
-    /*!
-    *  @brief Converts the raw R/G/B values to lux
-    *  @param r  red.
-    *  @param g  green.
-    *  @param b  blue.
+    /** 
+    *  Calculate the illuminance in Lux from  raw R/G/B
     *  @return  lux.
     */
     //% block
-    export function calculateLux(r: NumberFormat.UInt16LE, g: NumberFormat.UInt16LE, b: NumberFormat.UInt16LE): NumberFormat.UInt16LE {
+    //% block.loc.fr="Calcul la luminance en Lux"
+    //% jdoc.loc.fr="Calcul la luminance en Lux à partir des données rouge, vert, bleu"
+    export function calculateLux(): NumberFormat.UInt16LE {
         let illuminance: NumberFormat.Float32LE;
+
+        // Get raw data without delay
+        if (!_tcs34725Initialised) begin();
+
+        let c = readRegWord(TCS34725_CDATAL);
+        let r = readRegWord(TCS34725_RDATAL);
+        let g = readRegWord(TCS34725_GDATAL);
+        let b = readRegWord(TCS34725_BDATAL);
 
         /* This only uses RGB ... how can we integrate clear or calculate lux */
         /* based exclusively on clear since this might be more reliable?      */
@@ -306,39 +345,45 @@ namespace TCS34725 {
 
         return NumberFormat.UInt16LE(illuminance);
     }
-    /*!
-	*  @brief Interrupts enabled and turn off the LED
-	*/
-    //% block
+    /**
+	*  Interrupts enabled and turn off the LED
+	**/
+    //% block="Interrupts Enable"
+    //% block.loc.fr="Activer les interruptions"
     export function lock() {
         let r = readReg(TCS34725_ENABLE);
         r |= TCS34725_ENABLE_AIEN;
         writeReg(TCS34725_ENABLE, r);
     }
-    /*!
-	*  @brief Interrupts disabled and turn On the LED
-	*/
-    //% block
+    /**
+	*  Interrupts disabled and turn On the LED
+	**/
+    //% block="Interrupts Disable"
+    //% block.loc.fr="Desactiver les interruptions"
     export function unlock() {
         let r = readReg(TCS34725_ENABLE);
         r &= ~TCS34725_ENABLE_AIEN;
         writeReg(TCS34725_ENABLE, r);
     }
 
-    /*!
-	*  @brief clear Interrupts
-	*/
-    //% block
+    /**
+	*  brief clear Interrupts
+	**/
+    //% block="Clear Interrupts"
+    //% block.loc.fr="Effacer les interruptions"
     export function clear() {
         pins.i2cWriteNumber(TCS34725_ADDRESS, TCS34725_COMMAND_BIT | 0x66, NumberFormat.Int8LE)
 
     }
-    /*!
-	*  @brief set Int Limits
-	*  @param l low .
-	*  @param h high .
-	*/
-    //% block
+    /**
+	*  set Int Limits
+	*  @param l low limit
+	*  @param h high limit
+	**/
+    //% block="Set Interruptions Limits"
+    //% block.loc.fr="Définir les limites des interruptions"
+    //% l.loc.fr="limite haute"
+    //% h.loc.fr="limite basse"
     export function setIntLimits(low: NumberFormat.UInt16LE, high: NumberFormat.UInt16LE): void {
         writeReg(0x04, low & 0xFF);
         writeReg(0x05, low >> 8);
