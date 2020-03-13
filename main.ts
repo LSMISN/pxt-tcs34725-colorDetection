@@ -167,6 +167,7 @@ namespace TCS34725 {
 	*  @return  0  success.
 	*/
     //% block="Initialisation done"
+    //% block.loc.fr="Initialisation Terminée"
     export function begin(): boolean {
         /* Make sure we're actually connected */
         let x = readReg(TCS34725_ID);
