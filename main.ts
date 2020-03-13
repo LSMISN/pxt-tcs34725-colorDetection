@@ -163,9 +163,9 @@ namespace TCS34725 {
         writeReg(TCS34725_ENABLE, reg & ~(TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN));
     }
     /*!
-		*  @brief Initializes I2C and configures the sensor (call this function beforedoing anything else).
-		*  @return  0  success.
-		*/
+	*  @brief Initializes I2C and configures the sensor (call this function beforedoing anything else).
+	*  @return  0  success.
+	*/
     function begin(): boolean {
         /* Make sure we're actually connected */
         let x = readReg(TCS34725_ID);
@@ -191,7 +191,7 @@ namespace TCS34725 {
     //% block="integration time %it"
     //% block.loc.fr="temps d'intégration %it"
     //% it.loc.fr="temps d'intégration"
-    export function setIntegrationTime(it: number = tcs34725IntegrationTime_t.IT_101MS): void {
+    export function setIntegrationTime(it: TCS34725.tcs34725IntegrationTime_t = tcs34725IntegrationTime_t.IT_101MS): void {
         if (!_tcs34725Initialised) begin();
 
         /* Update the timing register */
@@ -208,7 +208,7 @@ namespace TCS34725 {
     //% block="gain %g"
     //% jsdoc.loc.fr="Permet d'ajuster la sensibilité à la lumière ambiante"
     //% g.loc.fr="gain"
-    export function setGain(g: number = tcs34725Gain_t.GAIN_1X) {
+    export function setGain(g: TCS34725.tcs34725Gain_t = tcs34725Gain_t.GAIN_1X) {
         if (!_tcs34725Initialised) begin();
 
         /* Update the timing register */
